@@ -5,17 +5,19 @@ import prisma from '@/lib/prisma';
 
 const signInPanel = async () => {
   const { isAuthenticated, getUser } = await getKindeServerSession();
-  const dbUser = await prisma.user.findUnique({
-    where:{
-      id : (await getUser())?.id,
-    },
-  });
+  const user = await getUser();
+  
+  if (await isAuthenticated() && user?.id) {
+    const dbUser = await prisma.user.findUnique({
+      where: {
+        id: user.id,
+      },
+    });
 
-
-  if (await isAuthenticated()) 
-    return(
-     <>{ dbUser!! && <UserProfilePanel user = {dbUser} />} </>
-    ) 
+    if (dbUser) {
+      return <UserProfilePanel user={dbUser} />;
+    }
+  }
 
   return (
     <div className="flex gap-3">
@@ -25,7 +27,6 @@ const signInPanel = async () => {
       <button color="primary">
         <RegisterLink> Sign Up </RegisterLink>
       </button>
-
     </div>
   )
 }
